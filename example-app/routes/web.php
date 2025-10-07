@@ -3,43 +3,43 @@
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
-    return 'Welcome to the Home Page. Lorem ipsum dolor sit amet.';
+    return view('pages.home', ['title' => 'Home']);
 })->name('home');
 
 Route::get('/contact', function () {
-    return 'Contact Us Page. Lorem ipsum dolor sit amet.';
+    return view('pages.contact', ['title' => 'Contact']);
 })->name('contact');
 
 Route::get('/program', function () {
-    return 'Our Program Page. Lorem ipsum dolor sit amet.';
+    return view('pages.program', ['title' => 'Program']);
 })->name('program');
 
 Route::get('/team', function () {
-    return 'Meet Our Team. Lorem ipsum dolor sit amet.';
+    return view('pages.team', ['title' => 'Team']);
 })->name('team');
 
 Route::get('/about', function () {
-    return 'About Us Page. Lorem ipsum dolor sit amet.';
+    return view('pages.about', ['title' => 'About']);
 })->name('about');
 
 Route::prefix('info')->group(function () {
     Route::get('/about', function () {
-        return 'Grouped Route: About Us. Lorem ipsum.';
+        return view('pages.about', ['title' => 'Info About']);
     });
 
     Route::get('/team', function () {
-        return 'Grouped Route: Our Team. Lorem ipsum.';
+        return view('pages.team', ['title' => 'Info Team']);
     });
 });
 
 Route::get('/program/{id}', function ($id) {
-    return "Program Detail for ID: $id. Lorem ipsum dolor sit amet.";
+    return view('pages.program-detail', ['id' => $id, 'title' => 'Program Detail']);
 });
 
 Route::redirect('/contact-us', '/contact');
 
-//Justincase
 Route::fallback(function () {
-    return response('Page not found. Please check the URL.', 404);
+    return response()->view('pages.404', [], 404);
 });
+
 
