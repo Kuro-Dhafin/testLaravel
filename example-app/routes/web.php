@@ -1,45 +1,42 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\ServiceController;
+use App\Http\Controllers\AdminController;
+use App\Http\Controllers\OrderController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Middleware\RoleMiddleware; // <-- Import the class
 
-Route::get('/', function () {
-    return view('pages.home', ['title' => 'Home']);
-})->name('home');
+// --- Public Routes ---
+Route::get('/', fn () => view('welcome'))->name('home');
+Route::get('/search', [ServiceController::class, 'search'])->name('services.search');
 
-Route::get('/contact', function () {
-    return view('pages.contact', ['title' => 'Contact']);
-})->name('contact');
+// --- Authentication Routes ---
+Route::get('/login', [AuthController::class, 'loginForm'])->name('login');
+Route::post('/login', [AuthController::class, 'login']);
+Route::get('/register', [AuthController::class, 'registerForm'])->name('register');
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-Route::get('/program', function () {
-    return view('pages.program', ['title' => 'Program']);
-})->name('program');
-
-Route::get('/team', function () {
-    return view('pages.team', ['title' => 'Team']);
-})->name('team');
-
-Route::get('/about', function () {
-    return view('pages.about', ['title' => 'About']);
-})->name('about');
-
-Route::prefix('info')->group(function () {
-    Route::get('/about', function () {
-        return view('pages.about', ['title' => 'Info About']);
-    });
-
-    Route::get('/team', function () {
-        return view('pages.team', ['title' => 'Info Team']);
-    });
+// --- Authenticated User Routes ---
+Route::middleware('auth')->group(function () {
+    Route::resource('services', ServiceController::class)->except(['show']);
+    Route::post('/orders/{service_id}', [OrderController::class, 'store'])->name('orders.store');
+    Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
+    Route::post('/upgrade/artist', [ProfileController::class, 'upgradeArtist'])->name('profile.upgrade');
 });
 
-Route::get('/program/{id}', function ($id) {
-    return view('pages.program-detail', ['id' => $id, 'title' => 'Program Detail']);
+// --- Artist Routes ---
+// Use the full class name for the middleware
+Route::middleware(['auth', RoleMiddleware::class . ':artist'])->prefix('artist')->name('artist.')->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'artist'])->name('dashboard');
 });
 
-Route::redirect('/contact-us', '/contact');
-
-Route::fallback(function () {
-    return response()->view('pages.404', [], 404);
+// --- Admin Routes ---
+// Use the full class name for the middleware
+Route::middleware(['auth', RoleMiddleware::class . ':admin'])->prefix('admin')->name('admin.')->group(function () {
+    Route::get('/dashboard', [DashboardController::class, 'admin'])->name('dashboard');
+    Route::get('/users', [AdminController::class, 'users'])->name('users');
 });
-
-
