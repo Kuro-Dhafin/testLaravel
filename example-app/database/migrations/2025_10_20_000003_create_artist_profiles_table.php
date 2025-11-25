@@ -7,18 +7,17 @@ use Illuminate\Support\Facades\Schema;
 return new class extends Migration {
     public function up(): void
     {
-        Schema::create('users', function (Blueprint $t) {
+        Schema::create('artist_profiles', function (Blueprint $t) {
             $t->id();
-            $t->string('name');
-            $t->string('email')->unique();
-            $t->string('password');
-            $t->enum('role', ['buyer','artist','admin'])->default('buyer');
+            $t->foreignId('user_id')->constrained()->onDelete('cascade');
+            $t->string('display_name');
+            $t->text('bio')->nullable();
             $t->timestamps();
         });
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('users');
+        Schema::dropIfExists('artist_profiles');
     }
 };

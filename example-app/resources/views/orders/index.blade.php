@@ -1,14 +1,35 @@
 @extends('layouts.app')
+
 @section('content')
-<h2>Order Saya</h2>
-<table class="table">
-    <tr><th>Service</th><th>Status</th></tr>
-    @foreach($orders as $o)
-    <tr>
-        <td>{{ $o->service->title }}</td>
-        <td>{{ $o->status }}</td>
-    </tr>
-    @endforeach
-</table>
-{{ $orders->links() }}
+<div class="container mt-4">
+
+    <h3>Your Orders</h3>
+    <hr>
+
+    @if($orders->isEmpty())
+        <p>No orders yet.</p>
+    @else
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Service</th>
+                    <th>Price</th>
+                    <th>Status</th>
+                    <th>Artist</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                @foreach($orders as $o)
+                <tr>
+                    <td>{{ $o->service->title }}</td>
+                    <td>${{ $o->price }}</td>
+                    <td>{{ ucfirst($o->status) }}</td>
+                    <td>{{ $o->service->artist->name }}</td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+    @endif
+</div>
 @endsection

@@ -4,7 +4,6 @@
 <div class="container">
     <h2 class="mb-4">Search Results</h2>
 
-    {{-- The search filter form remains at the top --}}
     <form action="{{ route('services.search') }}" method="GET" class="row g-3 mb-5">
         <div class="col-md-4">
             <input type="text" name="keyword" class="form-control" placeholder="Keyword" value="{{ request('keyword') }}">
@@ -29,7 +28,6 @@
         </div>
     </form>
 
-    {{-- Display the search results --}}
     @if($services->count() > 0)
         <div class="row">
             @foreach($services as $service)
@@ -40,17 +38,16 @@
                             <h5 class="card-title">{{ $service->title }}</h5>
                             <p class="card-text text-muted">{{ $service->category->name ?? 'Uncategorized' }}</p>
                             <p class="card-text fw-bold">Rp {{ number_format($service->price, 0, ',', '.') }}</p>
-                            
-                            {{-- Action buttons at the bottom of the card --}}
+
                             <div class="mt-auto d-grid gap-2">
-                                <a href="{{ route('services.show', $service->id) }}" class="btn btn-outline-primary">View Details</a>
                                 @auth
-                                    {{-- The order form is now INSIDE the loop --}}
                                     <form action="{{ route('orders.store', $service->id) }}" method="POST">
                                         @csrf
                                         <input type="hidden" name="quantity" value="1">
                                         <button type="submit" class="btn btn-success w-100">Order Now</button>
                                     </form>
+                                @else
+                                    <a href="{{ route('login') }}" class="btn btn-success w-100">Login to Order</a>
                                 @endauth
                             </div>
                         </div>
@@ -60,7 +57,6 @@
         </div>
 
         <div class="mt-4">
-            {{-- Make sure to append query strings for pagination to work with filters --}}
             {{ $services->withQueryString()->links() }}
         </div>
     @else

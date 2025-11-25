@@ -7,10 +7,23 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Middleware\RoleMiddleware; // <-- Import the class
+use App\Http\Middleware\RoleMiddleware;
 
 // --- Public Routes ---
-Route::get('/', fn () => view('welcome'))->name('home');
+Route::get('/', function () {
+    $services = \App\Models\Service::latest()->paginate(12);
+
+    if (auth()->check()) {
+        return match (auth()->user()->role) {
+            'admin' => redirect()->route('admin.dashboard'),
+            'artist' => redirect()->route('artist.dashboard'),
+            default => view('welcome', compact('services')),
+        };
+    }
+
+    return view('welcome', compact('services'));
+});
+
 Route::get('/search', [ServiceController::class, 'search'])->name('services.search');
 
 // --- Authentication Routes ---
@@ -23,20 +36,37 @@ Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 // --- Authenticated User Routes ---
 Route::middleware('auth')->group(function () {
     Route::resource('services', ServiceController::class)->except(['show']);
-    Route::post('/orders/{service_id}', [OrderController::class, 'store'])->name('orders.store');
+    Route::post('/orders/{service}', [OrderController::class, 'store'])->name('orders.store');
     Route::get('/orders', [OrderController::class, 'index'])->name('orders.index');
     Route::post('/upgrade/artist', [ProfileController::class, 'upgradeArtist'])->name('profile.upgrade');
 });
 
 // --- Artist Routes ---
-// Use the full class name for the middleware
-Route::middleware(['auth', RoleMiddleware::class . ':artist'])->prefix('artist')->name('artist.')->group(function () {
+Route::prefix('artist')->name('artist.')->middleware(['auth', RoleMiddleware::class . ':artist'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'artist'])->name('dashboard');
+    Route::get('/orders', [OrderController::class, 'artistOrders'])->name('orders.index');
+    Route::put('/orders/{order}', [OrderController::class, 'updateStatus'])->name('orders.update');
+    Route::resource('services', ServiceController::class)->except(['show'])->names([
+        'index' => 'services.index',
+        'create' => 'services.create',
+        'store' => 'services.store',
+        'edit' => 'services.edit',
+        'update' => 'services.update',
+        'destroy' => 'services.destroy',
+    ]);
 });
 
 // --- Admin Routes ---
-// Use the full class name for the middleware
-Route::middleware(['auth', RoleMiddleware::class . ':admin'])->prefix('admin')->name('admin.')->group(function () {
+Route::prefix('admin')->name('admin.')->middleware(['auth', RoleMiddleware::class . ':admin'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'admin'])->name('dashboard');
-    Route::get('/users', [AdminController::class, 'users'])->name('users');
+
+    // User management
+    Route::get('/users', [AdminController::class, 'users'])->name('users.index');
+    Route::get('/users/{user}/edit', [AdminController::class, 'editUser'])->name('users.edit');
+    Route::put('/users/{user}', [AdminController::class, 'updateUser'])->name('users.update');
+    Route::delete('/users/{user}', [AdminController::class, 'destroyUser'])->name('users.destroy');
+
+    // Orders management
+    Route::get('/orders', [OrderController::class, 'allOrders'])->name('orders.index');
 });
+

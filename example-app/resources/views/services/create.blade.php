@@ -1,26 +1,44 @@
 @extends('layouts.app')
+
 @section('content')
-<h2>Tambah Jasa</h2>
-<form method="POST" action="/services">@csrf
-    <input type="text" name="title" class="form-control mb-2" placeholder="Judul">
-    <select name="category_id" class="form-control mb-2">
-        @foreach($categories as $c)
-        <option value="{{ $c->id }}">{{ $c->name }}</option>
-        @endforeach
-    </select>
-    <input type="text" name="price" class="form-control mb-2" placeholder="Harga">
-    <form method="POST" action="/services" enctype="multipart/form-data">@csrf
-        <input type="file" name="image" class="form-control mb-2">...</form>
+<h3>Create Service</h3>
 
-    <select name="pricing_unit" class="form-control mb-2">
-        <option>per unit</option><option>per panel</option><option>per detik</option>
-    </select>
-    <textarea name="description" class="form-control mb-2" placeholder="Deskripsi"></textarea>
-    <button class="btn btn-success">Simpan</button>
+@if(session('success'))
+    <div class="alert alert-success">{{ session('success') }}</div>
+@endif
+
+<form method="POST" action="{{ route('services.store') }}" enctype="multipart/form-data">
+    @csrf
+
+    <div class="mb-3">
+        <label>Title</label>
+        <input type="text" name="title" class="form-control">
+    </div>
+
+    <div class="mb-3">
+        <label>Price Unit</label>
+        <select name="price_unit" class="form-control">
+            <option value="panel">Per Panel</option>
+            <option value="second_2d">Per Second (2D)</option>
+            <option value="second_3d">Per Second (3D)</option>
+        </select>
+    </div>
+
+    <div class="mb-3">
+        <label>Price</label>
+        <input type="number" name="price" class="form-control">
+    </div>
+
+    <div class="mb-3">
+        <label>Thumbnail</label>
+        <input type="file" name="thumbnail" class="form-control">
+    </div>
+
+    <div class="mb-3">
+        <label>Description</label>
+        <textarea name="description" class="form-control" rows="4"></textarea>
+    </div>
+
+    <button class="btn btn-primary">Save</button>
 </form>
-
-<div class="mt-3">
-    {{ $services->links('pagination::bootstrap-5') }}
-</div>
-
 @endsection

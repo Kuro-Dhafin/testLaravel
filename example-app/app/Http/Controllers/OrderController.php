@@ -1,41 +1,37 @@
 <?php
+
 namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\Service;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 
 class OrderController extends Controller
 {
-    public function store(Request $r, $service_id)
-    {
-        $service = Service::findOrFail($service_id);
-        $r->validate(['quantity'=>'required|integer|min:1']);
-
-        $order = Order::create([
-            'buyer_id'=>auth()->id(),
-            'service_id'=>$service->id,
-            'quantity'=>$r->quantity,
-            'total_price'=>$service->price * $r->quantity,
-        ]);
-
-        return redirect('/orders')->with('success','Order created');
-    }
-
     public function index()
     {
-        $orders = Order::with('service','buyer')
-            ->when(auth()->user()->role=='artist', fn($q)=>$q->whereHas('service', fn($s)=>$s->where('artist_id',auth()->id())))
-            ->when(auth()->user()->role=='buyer', fn($q)=>$q->where('buyer_id',auth()->id()))
-            ->paginate(6);
+        $orders = Order::with(['service', 'buyer'])
+            ->where('buyer_id', Auth::id())
+            ->latest()
+            ->get();
 
         return view('orders.index', compact('orders'));
     }
 
-    public function updateStatus(Request $r, Order $order)
+    public function store(Request $request, $service_id)
     {
-        $order->update(['status'=>$r->status]);
-        return back()->with('success','Status updated');
-    }
-}
+        $service = Service::findOrFail($service_id);
 
+        $order = Order::create([
+            'buyer_id' => auth()->id(),
+            'service_id' => $service->id,
+            'quantity' => 1,
+            'total_price' => $service->price,
+            'status' => 'pending'
+        ]);
+
+    return redirect()->back()->with('success', 'Order placed.');
+    }
+
+}

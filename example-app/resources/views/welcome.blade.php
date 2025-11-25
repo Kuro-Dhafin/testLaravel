@@ -1,59 +1,54 @@
 @extends('layouts.app')
 
 @section('content')
-<section class="bg-light py-5">
-    <div class="container">
-        <div class="row align-items-center">
-            <div class="col-md-6">
-                <h1 class="fw-bold">Marketplace Jasa Digital Art</h1>
-                <p class="lead">Temukan artist profesional untuk komisi gambar 2D, 3D, manga, animasi, ilustrasi, dan lainnya</p>
-                <a href="/services" class="btn btn-primary btn-lg">Jelajahi Artist</a>
-                <a href="/register" class="btn btn-outline-dark btn-lg">Gabung sebagai Artist</a>
-            </div>
-            <div class="col-md-6 text-center">
-                <img src="https://via.placeholder.com/500x300?text=Dummy+Artwork" class="img-fluid" alt="hero-art">
-            </div>
-        </div>
-    </div>
-</section>
+<div class="text-center mb-5">
+    <h1 class="display-4 fw-bold">Discover Artist Services</h1>
+    <p class="lead text-muted">Find talented artists for 2D, 3D, Webtoon, and Anime projects.</p>
 
-<section class="py-5">
-    <div class="container text-center">
-        <h2 class="fw-bold mb-4">Kategori Populer</h2>
-        <div class="row">
-            <div class="col-md-3">
-                <div class="p-3 border rounded">2D Illustration</div>
-            </div>
-            <div class="col-md-3">
-                <div class="p-3 border rounded">3D Modeling</div>
-            </div>
-            <div class="col-md-3">
-                <div class="p-3 border rounded">Manga / Webtoon</div>
-            </div>
-            <div class="col-md-3">
-                <div class="p-3 border rounded">Animation</div>
-            </div>
-        </div>
-    </div>
-</section>
+    <form method="GET" action="{{ route('services.search') }}" class="d-flex justify-content-center mt-3">
+        <input name="keyword" class="form-control w-50 me-2" placeholder="Search services...">
+        <button class="btn btn-primary">Search</button>
+    </form>
+</div>
 
-<section class="bg-light py-5">
-    <div class="container text-center">
-        <h2 class="fw-bold mb-4">Kenapa Memilih Kami</h2>
-        <div class="row">
-            <div class="col-md-4">
-                <h5>Aman & Terpercaya</h5>
-                <p>Pemesanan transparan, komunikasi langsung dengan artist</p>
-            </div>
-            <div class="col-md-4">
-                <h5>Harga Kompetitif</h5>
-                <p>Sistem harga berdasarkan satuan: panel, detik, atau per artwork</p>
-            </div>
-            <div class="col-md-4">
-                <h5>Artist Berkualitas</h5>
-                <p>Kumpulkan portfolio, review, dan penilaian</p>
+<div class="row g-4">
+    @foreach($services as $srv)
+        <div class="col-md-3">
+            <div class="card h-100 shadow-sm border-0 hover-scale">
+                <img src="{{ $srv->image ? asset('storage/'.$srv->image) : 'https://via.placeholder.com/300' }}" class="card-img-top" style="height:200px; object-fit:cover;">
+
+                <div class="card-body d-flex flex-column">
+                    <h5 class="card-title">{{ $srv->title }}</h5>
+                    <p class="text-muted mb-2">{{ $srv->price }} / {{ $srv->price_unit ?? 'per artwork' }}</p>
+                    <p class="card-text small flex-grow-1">{{ Str::limit($srv->description, 80) }}</p>
+                    <div class="mt-2">
+                        <span class="badge bg-info text-dark">{{ $srv->category->name ?? 'Uncategorized' }}</span>
+                    </div>
+                </div>
+
+                <div class="card-footer bg-white text-center">
+                    @auth
+                        <form method="POST" action="{{ route('orders.store', $srv->id) }}">
+                            @csrf
+                            <button type="submit" class="btn btn-success w-100">Order Now</button>
+                        </form>
+                    @else
+                        <a href="{{ route('login') }}" class="btn btn-success w-100">Login to Order</a>
+                    @endauth
+                </div>
             </div>
         </div>
-    </div>
-</section>
+    @endforeach
+</div>
+
+<div class="mt-4 d-flex justify-content-center">
+    {{ $services->links() }}
+</div>
+
+<style>
+.hover-scale:hover {
+    transform: scale(1.05);
+    transition: transform 0.3s;
+}
+</style>
 @endsection

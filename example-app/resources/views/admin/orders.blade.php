@@ -1,26 +1,31 @@
 @extends('layouts.app')
+
 @section('content')
-<h2>Manage Orders</h2>
-<table class="table">
-<tr><th>Service</th><th>Buyer</th><th>Status</th><th>Aksi</th></tr>
-@foreach($orders as $o)
-<tr>
-    <td>{{ $o->service->title }}</td>
-    <td>{{ $o->buyer->name }}</td>
-    <td>{{ $o->status }}</td>
-    <td>
-        <form method="POST" action="/admin/orders/{{ $o->id }}">
-            @csrf
-            <select name="status">
-                <option>pending</option>
-                <option>approved</option>
-                <option>rejected</option>
-            </select>
-            <button class="btn btn-sm btn-primary">Update</button>
-        </form>
-    </td>
-</tr>
-@endforeach
+<h3 class="mb-4">All Orders (Admin)</h3>
+
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>Buyer</th>
+            <th>Artist</th>
+            <th>Service</th>
+            <th>Price</th>
+            <th>Status</th>
+            <th>Date</th>
+        </tr>
+    </thead>
+
+    <tbody>
+    @foreach($orders as $o)
+        <tr>
+            <td>{{ $o->buyer->name }}</td>
+            <td>{{ $o->service->artist->name }}</td>
+            <td>{{ $o->service->title }}</td>
+            <td>Rp{{ number_format($o->service->price) }}</td>
+            <td>{{ ucfirst($o->status) }}</td>
+            <td>{{ $o->created_at->format('d M Y') }}</td>
+        </tr>
+    @endforeach
+    </tbody>
 </table>
-{{ $orders->links() }}
 @endsection
